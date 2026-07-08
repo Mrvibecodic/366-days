@@ -1,0 +1,10 @@
+.env
+node_modules/
+*.tmp.html
+*.bak
+newstyle.css
+.DS_Store
+
+preview.html
+docs/desktop.png
+docs/mobile.png
