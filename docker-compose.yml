@@ -1,0 +1,17 @@
+services:
+  remnawave-subscription-page:
+    image: ghcr.io/mrvibecodic/366-days:latest
+    container_name: remnawave-subscription-page
+    hostname: remnawave-subscription-page
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '127.0.0.1:3010:3010'
+    networks:
+      - remnawave-network
+
+networks:
+  remnawave-network:
+    driver: bridge
+    external: true
