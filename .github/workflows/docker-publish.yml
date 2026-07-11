@@ -3,6 +3,8 @@ name: build-and-publish
 on:
   push:
     branches: [latest, dev]
+    paths-ignore:
+      - '.github/upstream-digest.txt'
   release:
     types: [published]
   workflow_dispatch:

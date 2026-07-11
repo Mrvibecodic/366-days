@@ -1,0 +1,52 @@
+name: check-upstream
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: d
+        run: |
+          META=$(curl -s "https://hub.docker.com/v2/repositories/remnawave/subscription-page/tags/latest")
+          DIGEST=$(printf '%s' "$META" | python3 -c "import sys,json;print(json.load(sys.stdin).get('digest',''))")
+          DATE=$(printf '%s' "$META" | python3 -c "import sys,json;print(json.load(sys.stdin).get('last_updated',''))")
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Compare and notify
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NEW="${{ steps.d.outputs.digest }}"
+          if [ -z "$NEW" ]; then echo "could not fetch upstream digest, skipping"; exit 0; fi
+          PREV=$(tr -d '\n\r' < .github/upstream-digest.txt 2>/dev/null || echo "")
+          if [ "$NEW" = "$PREV" ]; then echo "no change: $NEW"; exit 0; fi
+          echo "upstream changed: $PREV -> $NEW"
+          printf '%s\n' "$NEW" > .github/upstream-digest.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/upstream-digest.txt
+          git commit -m "chore: upstream subscription-page digest -> $NEW" || true
+          git push || true
+          gh issue create \
+            --title "Официальный subscription-page обновился" \
+            --body "База \`remnawave/subscription-page:latest\` изменилась.
+
+          - новый digest: \`$NEW\`
+          - обновлён: ${{ steps.d.outputs.date }}
+
+          Наш образ подтянет её только при пересборке. Что сделать:
+          1. Проверить, что патчи прикладываются к новой базе — точки инъекции: \`/opt/app/subpage.template.html\`, EJS \`<%= panelData %>\`, \`docker-entrypoint.sh\`, \`node_modules/axios\` (для HWID), формат \`app-config-v2.json\`.
+          2. Пересобрать: Actions → build-and-publish → Run workflow (или создать новый release).
+
+          Создано автоматически: .github/workflows/check-upstream.yml"
