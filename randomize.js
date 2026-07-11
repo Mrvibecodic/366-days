@@ -18,6 +18,11 @@ try {
     h = h.replace(/<head>/, '<head>\n    <script>window.__SD="off"</script>');
   }
 
+  const forceMonth = parseInt(process.env.SUBPAGE_FORCE_MONTH || '', 10);
+  if (forceMonth >= 1 && forceMonth <= 12) {
+    h = h.replace(/<head>/, '<head>\n    <script>window.__SM=' + forceMonth + '</script>');
+  }
+
   h = h.replace(/<html([^>]*)>/, (m, a) => '<html' + a + ' data-' + nm() + '="' + hex(ri(3, 8)) + '">');
   h = h.replace(/<head>/, '<head>\n    <!-- ' + hex(ri(8, 32)) + ' -->\n    <meta name="' + nm() + '" content="' + nonce + '">');
 

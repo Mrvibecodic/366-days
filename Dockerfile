@@ -12,6 +12,7 @@ COPY fonts /opt/app/frontend/assets/fonts
 
 # Startup randomizer + wrapper entrypoint
 COPY randomize.js /opt/app/randomize.js
+COPY hwid-enrich.cjs /opt/app/hwid-enrich.cjs
 COPY custom-entrypoint.sh /opt/app/custom-entrypoint.sh
 RUN chmod +x /opt/app/custom-entrypoint.sh
 
