@@ -387,7 +387,7 @@ html.seasonal .season-motif svg { width: 44px; height: 44px; }
 html.seasonal .stat__icon { color: var(--season); }
 #weather { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
 #ground { position: fixed; left: 0; right: 0; bottom: 0; height: 180px; z-index: 0; pointer-events: none; display: none; }
-@media (max-width: 560px) { #ground { height: 104px; } .stat__value { font-size: 17px; } .traffic .stat__value { font-size: 19px; } .hero__name { font-size: 24px; } }
+@media (max-width: 560px) { #ground { height: 104px; } .stat__value { font-size: 17px; } .traffic .stat__value { font-size: 19px; } .hero__name { font-size: 24px; } .topbar { flex-direction: column; align-items: stretch; gap: 10px; } .brand { width: 100%; } .controls { width: 100%; flex-wrap: wrap; } .controls .btn { flex: 1 1 auto; justify-content: center; } .controls .btn__text { display: inline !important; } .controls .btn--icon { padding: 10px 13px; } }
 html.seasonal #ground { display: block; }
 #ground svg { width: 100%; height: 100%; display: block; }
 .wp { position: absolute; top: -6%; opacity: 0; will-change: transform, opacity; }
@@ -434,8 +434,8 @@ html.seasonal #ground { display: block; }
 .kv__k { color: var(--text-2); font-size: 14px; }
 .kv__v { font-weight: 500; font-size: 14px; text-align: right; overflow-wrap: anywhere; }
 
-.seg-wrap { position: relative; margin-top: 2px; }.seg-wrap::before, .seg-wrap::after { content: ""; position: absolute; top: 4px; bottom: 4px; width: 26px; pointer-events: none; z-index: 2; opacity: 0; transition: opacity .18s var(--ease); }.seg-wrap::before { left: 4px; background: linear-gradient(90deg, var(--sunken), transparent); border-radius: var(--r-xs) 0 0 var(--r-xs); }.seg-wrap::after { right: 4px; background: linear-gradient(270deg, var(--sunken), transparent); border-radius: 0 var(--r-xs) var(--r-xs) 0; }.seg-wrap.can-left::before { opacity: 1; }.seg-wrap.can-right::after { opacity: 1; }
-.seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--r); background: var(--sunken); overflow-x: auto; scrollbar-width: none; }
+.seg-wrap { position: relative; margin-top: 2px; }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: var(--r); background: var(--sunken); }
 .seg::-webkit-scrollbar { display: none; }
 .seg__item {
     flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
@@ -467,7 +467,7 @@ html.seasonal #ground { display: block; }
 .app-head__icon svg { width: 21px; height: 21px; }
 .app-head__name { font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: -.01em; }
 .app-head .star-icon { width: 15px; height: 15px; color: var(--accent); flex-shrink: 0; }
-.app-tabs { display: flex; gap: 7px; margin: 14px 0 12px; overflow-x: auto; scrollbar-width: none; padding-bottom: 1px; }
+.app-tabs { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0 12px; padding-bottom: 1px; }
 .app-tabs::-webkit-scrollbar { display: none; }
 .app-tab {
     display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
