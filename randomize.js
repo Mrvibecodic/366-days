@@ -24,13 +24,11 @@ try {
   }
 
   h = h.replace(/<html([^>]*)>/, (m, a) => '<html' + a + ' data-' + nm() + '="' + hex(ri(3, 8)) + '">');
-  h = h.replace(/<head>/, '<head>\n    <!-- ' + hex(ri(8, 32)) + ' -->\n    <meta name="' + nm() + '" content="' + nonce + '">');
+  h = h.replace(/<head>/, '<head>\n    <meta name="' + nm() + '" content="' + nonce + '">');
 
   let vars = '';
   for (let i = 0; i < ri(4, 12); i++) vars += '--_' + hex(3) + ':' + ri(0, 9999) + ';';
   h = h.replace(/:root\s*\{/, (m) => m + vars);
-
-  h = h.replace(/<style>/, '<style>/*' + hex(ri(4, 16)) + '*/');
 
   const links = h.match(/\n\s*<link rel="(?:apple-touch-icon|icon)[^>]*>/g);
   if (links && links.length > 1) {
