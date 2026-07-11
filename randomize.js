@@ -57,8 +57,6 @@ function obfuscateClasses(html) {
   }
 }
 
-// Mask string/template/regex/comment CONTENT with spaces, preserving positions and
-// all structural characters (braces, parens) so brace-depth can be computed reliably.
 function maskJs(src) {
   const out = src.split('');
   let i = 0;
@@ -105,7 +103,6 @@ function maskJs(src) {
   return out.join('');
 }
 
-// Per-deployment mangling of the engine's top-level FUNCTION names.
 function mangleGlobals(html) {
   try {
     const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/g;
@@ -137,11 +134,9 @@ function mangleGlobals(html) {
       if (builtins.has(name)) continue;
       if (deps.length !== 1 || deps[0] !== 0) continue;
       if (tokenCount(others, name) > 0) continue;
-      // property-access collision (allow window.NAME)
       let nonWindowDot = false; const dotRe = new RegExp('([A-Za-z0-9_$]*)\\s*\\.\\s*' + name + '(?![A-Za-z0-9_$])', 'g'); let dm;
       while ((dm = dotRe.exec(masked))) { if (dm[1] !== 'window') { nonWindowDot = true; break; } }
       if (nonWindowDot) continue;
-      // object-literal key collision
       if (new RegExp('[\\{,]\\s*' + name + '\\s*:').test(masked)) continue;
       candidates.push(name);
     }

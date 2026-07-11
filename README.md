@@ -57,6 +57,8 @@
 - `EGAMES_COOKIE` — если панель закрыта реверс-прокси от eGames (кука в nginx). Подробнее ниже.
 - `CADDY_AUTH_API_TOKEN` — если панель за «Caddy with security» / Tiny Auth (уходит как заголовок `X-Api-Key`).
 - `CLOUDFLARE_ZERO_TRUST_CLIENT_ID` / `CLOUDFLARE_ZERO_TRUST_CLIENT_SECRET` — если панель за Cloudflare Zero Trust.
+- `APP_PORT` — порт страницы внутри контейнера, по умолчанию `3010`. Обычно менять не нужно.
+- `MARZBAN_LEGACY_LINK_ENABLED` / `MARZBAN_LEGACY_SECRET_KEY` / `MARZBAN_LEGACY_SUBSCRIPTION_VALID_FROM` — нужны только если переносите старые подписочные ссылки с Marzban. Не переносите — оставьте как есть.
 
 Приложения, логотип, название, тексты и языки настраиваются **в самой панели**: Подписка → Subpage Builder. Эта страница ничего из этого в себе не хранит.
 
