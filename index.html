@@ -242,7 +242,7 @@ html.dark {
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
 
 body {
     font-family: var(--font);
@@ -356,7 +356,7 @@ svg { display: block; }
     .stats__row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
     .stats__row .stat:last-child:nth-child(odd) { grid-column: auto; }
 }
-.stat { position: relative; background: var(--sunken); border-radius: var(--r); padding: 14px 15px; }
+.stat { position: relative; background: var(--sunken); border: 1px solid var(--border-2); border-radius: var(--r); padding: 14px 15px; }
 .stat[data-tip] { cursor: help; }
 .stat:hover, .stat.tip-open { z-index: 5; }
 .stat__icon { position: absolute; right: 10px; top: 12px; color: var(--text-3); opacity: .16; pointer-events: none; }
@@ -398,7 +398,7 @@ html.seasonal #ground { display: block; }
 .ti { font-size: inherit; line-height: 1; display: inline-flex; }
 .app-card__icon .ti, .app-head__icon .ti { font-size: 21px; }
 .platform-list__item .ti { font-size: 19px; }
-.seg__item .ti { font-size: 16px; }
+.seg__item .ti { font-size: 16px; } .app-tab, .seg__item, .lang-btn, .modal__close { -webkit-tap-highlight-color: transparent; } :focus:not(:focus-visible) { outline: none; }
 .app-tab-icon .ti { font-size: 15px; }
 .btn .ti { font-size: 15px; }
 .guide-card__icon .ti, .acc-icon .ti, .tl-dot .ti { font-size: 18px; }
@@ -478,7 +478,7 @@ html.seasonal #ground { display: block; }
 }
 .app-tab:hover { color: var(--text); }
 .app-tab.active { color: var(--on-ink); background: var(--ink); border-color: var(--ink); }
-.app-tab.active .star-icon { color: var(--on-ink); }.app-tab-icon svg [fill]:not([fill="none"]), .app-head__icon svg [fill]:not([fill="none"]), .app-card__icon svg [fill]:not([fill="none"]) { fill: currentColor; }
+.app-tab.active .star-icon { color: var(--on-ink); }.app-tab-icon svg, .app-head__icon svg, .app-card__icon svg { fill: currentColor; }.app-tab-icon svg [fill="none"], .app-head__icon svg [fill="none"], .app-card__icon svg [fill="none"] { fill: none; }.app-tab-icon svg [fill]:not([fill="none"]), .app-head__icon svg [fill]:not([fill="none"]), .app-card__icon svg [fill]:not([fill="none"]) { fill: currentColor; }
 .app-tab .star-icon { width: 12px; height: 12px; color: var(--accent); }
 .app-tab-icon svg { width: 15px; height: 15px; }
 
