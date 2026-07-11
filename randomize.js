@@ -57,12 +57,125 @@ function obfuscateClasses(html) {
   }
 }
 
+// Mask string/template/regex/comment CONTENT with spaces, preserving positions and
+// all structural characters (braces, parens) so brace-depth can be computed reliably.
+function maskJs(src) {
+  const out = src.split('');
+  let i = 0;
+  const n = src.length;
+  let prevSig = '';
+  const isRegexCtx = () => prevSig === '' || '(,=:[!&|?{};+-*%^~<>'.includes(prevSig);
+  while (i < n) {
+    const c = src[i];
+    if (c === '/' && src[i + 1] === '/') { while (i < n && src[i] !== '\n') { out[i] = ' '; i++; } continue; }
+    if (c === '/' && src[i + 1] === '*') { out[i] = ' '; out[i + 1] = ' '; i += 2; while (i < n && !(src[i] === '*' && src[i + 1] === '/')) { if (src[i] !== '\n') out[i] = ' '; i++; } if (i < n) { out[i] = ' '; out[i + 1] = ' '; i += 2; } continue; }
+    if (c === '"' || c === "'") { const q = c; out[i] = ' '; i++; while (i < n && src[i] !== q) { if (src[i] === '\\') { out[i] = ' '; out[i + 1] = ' '; i += 2; continue; } if (src[i] !== '\n') out[i] = ' '; i++; } if (i < n) { out[i] = ' '; i++; } prevSig = 'x'; continue; }
+    if (c === '`') {
+      out[i] = ' '; i++;
+      while (i < n) {
+        if (src[i] === '\\') { out[i] = ' '; out[i + 1] = ' '; i += 2; continue; }
+        if (src[i] === '`') { out[i] = ' '; i++; break; }
+        if (src[i] === '$' && src[i + 1] === '{') {
+          out[i] = ' '; i++; let depth = 1; i++;
+          while (i < n && depth > 0) {
+            const cc = src[i];
+            if (cc === '/' && src[i + 1] === '/') { while (i < n && src[i] !== '\n') { out[i] = ' '; i++; } continue; }
+            if (cc === '/' && src[i + 1] === '*') { out[i] = ' '; out[i + 1] = ' '; i += 2; while (i < n && !(src[i] === '*' && src[i + 1] === '/')) { if (src[i] !== '\n') out[i] = ' '; i++; } if (i < n) { out[i] = ' '; out[i + 1] = ' '; i += 2; } continue; }
+            if (cc === '"' || cc === "'") { const q = cc; out[i] = ' '; i++; while (i < n && src[i] !== q) { if (src[i] === '\\') { out[i] = ' '; out[i + 1] = ' '; i += 2; continue; } if (src[i] !== '\n') out[i] = ' '; i++; } if (i < n) { out[i] = ' '; i++; } continue; }
+            if (cc === '`') { out[i] = ' '; i++; let td = 0; while (i < n) { if (src[i] === '\\') { out[i] = ' '; out[i + 1] = ' '; i += 2; continue; } if (src[i] === '$' && src[i + 1] === '{') { td++; out[i] = ' '; out[i + 1] = ' '; i += 2; continue; } if (src[i] === '}' && td > 0) { td--; out[i] = ' '; i++; continue; } if (src[i] === '`' && td === 0) { out[i] = ' '; i++; break; } if (src[i] !== '\n') out[i] = ' '; i++; } continue; }
+            if (cc === '{') depth++; else if (cc === '}') depth--;
+            i++;
+          }
+          continue;
+        }
+        if (src[i] !== '\n') out[i] = ' ';
+        i++;
+      }
+      prevSig = 'x'; continue;
+    }
+    if (c === '/' && isRegexCtx()) {
+      out[i] = ' '; i++; let inClass = false;
+      while (i < n) { if (src[i] === '\\') { out[i] = ' '; out[i + 1] = ' '; i += 2; continue; } if (src[i] === '[') inClass = true; else if (src[i] === ']') inClass = false; else if (src[i] === '/' && !inClass) { out[i] = ' '; i++; break; } if (src[i] !== '\n') out[i] = ' '; i++; }
+      while (i < n && /[a-z]/.test(src[i])) { out[i] = ' '; i++; }
+      prevSig = 'x'; continue;
+    }
+    if (!/\s/.test(c)) prevSig = c;
+    i++;
+  }
+  return out.join('');
+}
+
+// Per-deployment mangling of the engine's top-level FUNCTION names.
+function mangleGlobals(html) {
+  try {
+    const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/g;
+    let m; const blocks = [];
+    while ((m = re.exec(html))) blocks.push({ body: m[2] });
+    let engIdx = -1;
+    blocks.forEach((b, i) => { if (/classList/.test(b.body) && /detectOS/.test(b.body)) engIdx = i; });
+    if (engIdx < 0) return { html: html, count: 0 };
+    const engine = blocks[engIdx].body;
+    const others = blocks.filter((b, i) => i !== engIdx).map((b) => b.body).join('\n');
+
+    const masked = maskJs(engine);
+    const depth = new Array(masked.length);
+    let d = 0;
+    for (let i = 0; i < masked.length; i++) { const c = masked[i]; if (c === '{') d++; else if (c === '}') d--; depth[i] = d; }
+
+    const fnRe = /\bfunction\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(/g;
+    let fm; const defs = {};
+    while ((fm = fnRe.exec(masked))) { const name = fm[1]; (defs[name] = defs[name] || []).push(depth[fm.index]); }
+
+    const builtins = new Set(['document', 'window', 'localStorage', 'Math', 'JSON', 'Date', 'fetch', 'atob', 'btoa', 'console', 'Object', 'Array', 'setTimeout', 'requestAnimationFrame', 'matchMedia', 'URL', 'encodeURIComponent', 'decodeURIComponent', 'setInterval', 'clearTimeout', 'clearInterval', 'navigator', 'location', 'history', 'Promise', 'String', 'Number', 'Boolean', 'RegExp', 'Map', 'Set', 'parseInt', 'parseFloat', 'isNaN', 'Error', 'Function', 'Symbol', 'WeakMap', 'getComputedStyle', 'CSS']);
+    const tokenCount = (str, name) => (str.match(new RegExp('(?<![A-Za-z0-9_$])' + name + '(?![A-Za-z0-9_$])', 'g')) || []).length;
+
+    const candidates = [];
+    for (const name in defs) {
+      const deps = defs[name];
+      if (name.indexOf('__') === 0) continue;
+      if (name.length <= 3) continue;
+      if (builtins.has(name)) continue;
+      if (deps.length !== 1 || deps[0] !== 0) continue;
+      if (tokenCount(others, name) > 0) continue;
+      // property-access collision (allow window.NAME)
+      let nonWindowDot = false; const dotRe = new RegExp('([A-Za-z0-9_$]*)\\s*\\.\\s*' + name + '(?![A-Za-z0-9_$])', 'g'); let dm;
+      while ((dm = dotRe.exec(masked))) { if (dm[1] !== 'window') { nonWindowDot = true; break; } }
+      if (nonWindowDot) continue;
+      // object-literal key collision
+      if (new RegExp('[\\{,]\\s*' + name + '\\s*:').test(masked)) continue;
+      candidates.push(name);
+    }
+
+    const used = new Set();
+    let mm; const idRe = /_[0-9a-f]{5,7}/g;
+    while ((mm = idRe.exec(html))) used.add(mm[0]);
+    const map = {};
+    for (const name of candidates) {
+      let nn; do { nn = '_' + hex(3); } while (used.has(nn));
+      used.add(nn); map[name] = nn;
+    }
+
+    let out = html;
+    for (const oldN in map) {
+      const reN = new RegExp('(?<![A-Za-z0-9_$])' + oldN + '(?![A-Za-z0-9_$])', 'g');
+      out = out.replace(reN, map[oldN]);
+    }
+    return { html: out, count: Object.keys(map).length };
+  } catch (e) {
+    console.error('[subpage] global mangling skipped:', e.message);
+    return { html: html, count: 0 };
+  }
+}
+
 try {
   let h = fs.readFileSync(src, 'utf8');
   const nonce = hex(ri(8, 20));
 
   const obf = obfuscateClasses(h);
   h = obf.html;
+
+  const mg = mangleGlobals(h);
+  h = mg.html;
 
   const seasonal = String(process.env.SUBPAGE_SEASONAL || 'on').toLowerCase();
   if (['off', 'false', '0', 'no', 'disabled'].indexOf(seasonal) >= 0) {
@@ -91,7 +204,7 @@ try {
   h = h.replace(/(<div id="ground"[^>]*><\/div>)/, (m) => m + '\n'.repeat(ri(0, 2)));
 
   fs.writeFileSync(dst, h);
-  console.log('[subpage] build ' + nonce + ' (seasonal=' + seasonal + ', classes=' + obf.count + ') -> ' + dst);
+  console.log('[subpage] build ' + nonce + ' (seasonal=' + seasonal + ', classes=' + obf.count + ', globals=' + mg.count + ') -> ' + dst);
 } catch (e) {
   console.error('[subpage] randomize failed, using template as-is:', e.message);
   try { fs.copyFileSync(src, dst); } catch (_) {}
