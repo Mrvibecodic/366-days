@@ -3,6 +3,7 @@ name: build-and-publish
 on:
   push:
     branches: [latest, dev]
+    tags: ['v*']
     paths-ignore:
       - '.github/upstream-digest.txt'
   release:
