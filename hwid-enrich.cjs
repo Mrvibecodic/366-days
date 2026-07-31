@@ -39,10 +39,17 @@ try {
           if (limit === undefined || limit === null) return resp;
           user.hwidDeviceLimit = limit;
 
-          if (full.uuid) {
+          const uid = full.uuid !== undefined && full.uuid !== null && full.uuid !== ''
+            ? full.uuid
+            : full.id;
+          if (uid !== undefined && uid !== null && uid !== '') {
             try {
-              const dev = await instance.get('/api/hwid/devices/' + encodeURIComponent(String(full.uuid)));
-              const total = dev && dev.data && dev.data.response && dev.data.response.total;
+              const dev = await instance.get('/api/hwid/devices/' + encodeURIComponent(String(uid)));
+              const body = dev && dev.data && dev.data.response;
+              let total = body && body.total;
+              if (typeof total !== 'number' && body && Array.isArray(body.devices)) {
+                total = body.devices.length;
+              }
               if (typeof total === 'number') user.hwidDeviceCount = total;
             } catch (e) {}
           }
