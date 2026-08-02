@@ -1,6 +1,6 @@
 services:
   remnawave-subscription-page:
-    image: ghcr.io/mrvibecodic/366-days:latest
+    image: ghcr.io/mrvibecodic/366-days:1.2.0
     container_name: remnawave-subscription-page
     hostname: remnawave-subscription-page
     restart: always

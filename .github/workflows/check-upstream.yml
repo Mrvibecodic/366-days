@@ -46,7 +46,7 @@ jobs:
           - обновлён: ${{ steps.d.outputs.date }}
 
           Наш образ подтянет её только при пересборке. Что сделать:
-          1. Проверить, что патчи прикладываются к новой базе — точки инъекции: \`/opt/app/subpage.template.html\`, EJS \`<%= panelData %>\`, \`docker-entrypoint.sh\`, \`node_modules/axios\` (для HWID), формат \`app-config-v2.json\`.
+          1. Проверить, что патчи прикладываются к новой базе — точки инъекции: \`/opt/app/subpage.template.html\`, EJS \`<%= panelData %>\`, \`docker-entrypoint.sh\`, axios для HWID (с 8.0 это \`/opt/app/dist/node_modules/axios\`, раньше \`/opt/app/node_modules/axios\`), формат \`app-config-v2.json\`.
           2. Пересобрать: Actions → build-and-publish → Run workflow (или создать новый release).
 
           Создано автоматически: .github/workflows/check-upstream.yml"

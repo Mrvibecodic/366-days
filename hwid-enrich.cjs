@@ -2,7 +2,12 @@
 try {
   const on = String(process.env.HWID_DEVICES || '').toLowerCase();
   if (on === 'on' || on === 'true' || on === '1' || on === 'yes') {
-    const axios = require('/opt/app/node_modules/axios');
+    let axios = null;
+    const paths = ['/opt/app/dist/node_modules/axios', '/opt/app/node_modules/axios', 'axios'];
+    for (let i = 0; i < paths.length && !axios; i++) {
+      try { axios = require(paths[i]); } catch (e) {}
+    }
+    if (!axios || typeof axios.create !== 'function') return;
     const realCreate = axios.create.bind(axios);
     axios.create = function patchedCreate(config) {
       const instance = realCreate(config);
