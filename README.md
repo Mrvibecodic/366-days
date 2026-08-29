@@ -1,12 +1,15 @@
 # 366 days — страница подписки для Remnawave
 
+[![Telegram — группа](https://img.shields.io/badge/Telegram-%D0%B3%D1%80%D1%83%D0%BF%D0%BF%D0%B0-2AABEE?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+2lmP1yhxpCE3MDcy)
+[![Telegram — чат](https://img.shields.io/badge/Telegram-%D1%87%D0%B0%D1%82-229ED9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+8BJQXYXYLqM4YWYy)
+
 Красивая страница подписки для панели [Remnawave](https://remna.st/). Ставится вместо стандартной: панель по‑прежнему сама подставляет данные пользователя и настройки (приложения, бренд, тексты, языки) — всё как обычно, просто выглядит лучше.
 
 Главная фишка — **живая смена времён года**: страница сама смотрит на календарь и меняет оформление. Зимой идёт снег и растут сугробы, весной летят лепестки и распускаются цветы, летом греет солнце, осенью падают листья и желтеет трава — с плавным нарастанием по месяцам.
 
 ![Превью](docs/promo.png)
 
-Вопросы и обсуждение — в [чате автора](https://t.me/+O5jAhwcYdYhlY2Yy).
+Новости и обновления — в [группе](https://t.me/+2lmP1yhxpCE3MDcy), вопросы и обсуждение — в [чате](https://t.me/+8BJQXYXYLqM4YWYy).
 
 ## Что внутри
 
