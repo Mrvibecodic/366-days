@@ -8,6 +8,20 @@ try {
       try { axios = require(paths[i]); } catch (e) {}
     }
     if (!axios || typeof axios.create !== 'function') return;
+    const TTL = 60000;
+    const cache = new Map();
+    const cached = async function (key, load) {
+      const hit = cache.get(key);
+      if (hit && Date.now() - hit.t < TTL) return hit.v;
+      let v = null;
+      try { v = await load(); } catch (e) { v = null; }
+      cache.set(key, { t: Date.now(), v: v });
+      return v;
+    };
+    const pickHwid = function (obj) {
+      const hw = obj && obj.hwidSettings;
+      return hw && typeof hw === 'object' && typeof hw.enabled === 'boolean' ? hw : null;
+    };
     const realCreate = axios.create.bind(axios);
     axios.create = function patchedCreate(config) {
       const instance = realCreate(config);
@@ -17,7 +31,8 @@ try {
           const url = String(cfg.url || '');
           if (url.indexOf('/by-username/') !== -1 ||
               url.indexOf('/hwid/devices/') !== -1 ||
-              url.indexOf('/subscription-settings') !== -1) {
+              url.indexOf('/subscription-settings') !== -1 ||
+              url.indexOf('/external-squads/') !== -1) {
             return resp;
           }
           const data = resp && resp.data;
@@ -31,15 +46,23 @@ try {
           const full = admin && admin.data && admin.data.response;
           if (!full) return resp;
 
+          let hw = await cached('global', async function () {
+            const st = await instance.get('/api/subscription-settings');
+            return pickHwid(st && st.data && st.data.response);
+          });
+          const squad = full.externalSquadUuid;
+          if (typeof squad === 'string' && squad !== '') {
+            const own = await cached('squad:' + squad, async function () {
+              const sq = await instance.get('/api/external-squads/' + encodeURIComponent(squad));
+              return pickHwid(sq && sq.data && sq.data.response);
+            });
+            if (own) hw = own;
+          }
+          if (hw && !hw.enabled) return resp;
+
           let limit = full.hwidDeviceLimit;
-          if (limit === undefined || limit === null) {
-            try {
-              const st = await instance.get('/api/subscription-settings');
-              const hw = st && st.data && st.data.response && st.data.response.hwidSettings;
-              if (hw && hw.enabled && typeof hw.fallbackDeviceLimit === 'number') {
-                limit = hw.fallbackDeviceLimit;
-              }
-            } catch (e) {}
+          if ((limit === undefined || limit === null) && hw && typeof hw.fallbackDeviceLimit === 'number') {
+            limit = hw.fallbackDeviceLimit;
           }
           if (limit === undefined || limit === null) return resp;
           user.hwidDeviceLimit = limit;
