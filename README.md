@@ -304,7 +304,7 @@ cd /opt/remnawave/nginx && docker compose up -d && docker compose logs -f -t
 Поэтому в `docker-compose.yml` указан конкретный номер версии, а не `latest`:
 
 ```
-image: ghcr.io/mrvibecodic/366-days:1.2.1
+image: ghcr.io/mrvibecodic/366-days:1.2.2
 ```
 
 Так вы обновляетесь тогда, когда сами этого захотели, а не случайным `docker compose pull`.
