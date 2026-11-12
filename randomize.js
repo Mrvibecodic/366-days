@@ -134,7 +134,7 @@ function mangleGlobals(html) {
       if (builtins.has(name)) continue;
       if (deps.length !== 1 || deps[0] !== 0) continue;
       if (tokenCount(others, name) > 0) continue;
-      let nonWindowDot = false; const dotRe = new RegExp('([A-Za-z0-9_$]*)\\s*\\.\\s*' + name + '(?![A-Za-z0-9_$])', 'g'); let dm;
+      let nonWindowDot = false; const dotRe = new RegExp('([A-Za-z0-9_$]*)\\.' + name + '(?![A-Za-z0-9_$])', 'g'); let dm;
       while ((dm = dotRe.exec(masked))) { if (dm[1] !== 'window') { nonWindowDot = true; break; } }
       if (nonWindowDot) continue;
       if (new RegExp('[\\{,]\\s*' + name + '\\s*:').test(masked)) continue;
@@ -177,6 +177,11 @@ try {
     h = h.replace(/<head>/, '<head>\n    <script>window.__SD="off"</script>');
   }
 
+  const appsView = String(process.env.SUBPAGE_APPS_VIEW || 'list').toLowerCase() === 'tiles' ? 'tiles' : 'list';
+  if (appsView === 'tiles') {
+    h = h.replace(/<head>/, '<head>\n    <script>window.__AV="tiles"</script>');
+  }
+
   const forceMonth = parseInt(process.env.SUBPAGE_FORCE_MONTH || '', 10);
   if (forceMonth >= 1 && forceMonth <= 12) {
     h = h.replace(/<head>/, '<head>\n    <script>window.__SM=' + forceMonth + '</script>');
@@ -199,7 +204,7 @@ try {
   h = h.replace(/(<div id="ground"[^>]*><\/div>)/, (m) => m + '\n'.repeat(ri(0, 2)));
 
   fs.writeFileSync(dst, h);
-  console.log('[subpage] build ' + nonce + ' (seasonal=' + seasonal + ', classes=' + obf.count + ', globals=' + mg.count + ') -> ' + dst);
+  console.log('[subpage] build ' + nonce + ' (seasonal=' + seasonal + ', apps=' + appsView + ', classes=' + obf.count + ', globals=' + mg.count + ') -> ' + dst);
 } catch (e) {
   console.error('[subpage] randomize failed, using template as-is:', e.message);
   try { fs.copyFileSync(src, dst); } catch (_) {}
