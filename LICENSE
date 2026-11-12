@@ -23,7 +23,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Bundled third-party assets keep their own licenses: tsParticles (MIT),
-qrcode-generator (MIT), JSEncrypt (MIT), Inter & Inter Tight fonts (SIL OFL 1.1),
+Bundled third-party assets keep their own licenses: qrcode-generator (MIT), JSEncrypt (MIT), Inter & Inter Tight fonts (SIL OFL 1.1),
 Twemoji (CC-BY 4.0), Simple Icons, Lucide (ISC). This image is built on top of
 remnawave/subscription-page (AGPL-3.0).
