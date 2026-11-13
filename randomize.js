@@ -173,13 +173,31 @@ try {
   h = mg.html;
 
   const seasonal = String(process.env.SUBPAGE_SEASONAL || 'on').toLowerCase();
+  const flags = [];
+  const pick = (name, def, other) => {
+    const v = String(process.env[name] || def).toLowerCase();
+    return other.indexOf(v) >= 0 ? v : def;
+  };
+  let season = 'on';
   if (['off', 'false', '0', 'no', 'disabled'].indexOf(seasonal) >= 0) {
-    h = h.replace(/<head>/, '<head>\n    <script>window.__SD="off"</script>');
+    season = 'off';
+    flags.push('window.__SD="off"');
+  } else if (seasonal === 'static' || seasonal === 'full') {
+    season = seasonal;
+    flags.push('window.__SF="' + seasonal + '"');
   }
-
-  const appsView = String(process.env.SUBPAGE_APPS_VIEW || 'list').toLowerCase() === 'tiles' ? 'tiles' : 'list';
-  if (appsView === 'tiles') {
-    h = h.replace(/<head>/, '<head>\n    <script>window.__AV="tiles"</script>');
+  const appsView = pick('SUBPAGE_APPS_VIEW', 'list', ['tiles']);
+  if (appsView !== 'list') flags.push('window.__AV="tiles"');
+  const platView = pick('SUBPAGE_PLATFORMS_VIEW', 'list', ['bar']);
+  if (platView !== 'list') flags.push('window.__PV="bar"');
+  const platOpen = pick('SUBPAGE_PLATFORM_OPEN', 'off', ['auto']);
+  if (platOpen !== 'off') flags.push('window.__PO="auto"');
+  const linkButton = pick('SUBPAGE_LINK_BUTTON', 'copy', ['window']);
+  if (linkButton !== 'copy') flags.push('window.__LB="window"');
+  const compact = pick('SUBPAGE_COMPACT', 'on', ['off']);
+  if (compact !== 'on') flags.push('window.__CI="off"');
+  if (flags.length) {
+    h = h.replace(/<head>/, '<head>\n    <script>' + flags.join(';') + '</script>');
   }
 
   const forceMonth = parseInt(process.env.SUBPAGE_FORCE_MONTH || '', 10);
@@ -204,7 +222,7 @@ try {
   h = h.replace(/(<div id="ground"[^>]*><\/div>)/, (m) => m + '\n'.repeat(ri(0, 2)));
 
   fs.writeFileSync(dst, h);
-  console.log('[subpage] build ' + nonce + ' (seasonal=' + seasonal + ', apps=' + appsView + ', classes=' + obf.count + ', globals=' + mg.count + ') -> ' + dst);
+  console.log('[subpage] build ' + nonce + ' (seasonal=' + season + ', apps=' + appsView + ', platforms=' + platView + ', open=' + platOpen + ', link=' + linkButton + ', compact=' + compact + ', classes=' + obf.count + ', globals=' + mg.count + ') -> ' + dst);
 } catch (e) {
   console.error('[subpage] randomize failed, using template as-is:', e.message);
   try { fs.copyFileSync(src, dst); } catch (_) {}
