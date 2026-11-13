@@ -188,8 +188,8 @@ try {
   }
   const appsView = pick('SUBPAGE_APPS_VIEW', 'list', ['tiles']);
   if (appsView !== 'list') flags.push('window.__AV="tiles"');
-  const platView = pick('SUBPAGE_PLATFORMS_VIEW', 'list', ['bar']);
-  if (platView !== 'list') flags.push('window.__PV="bar"');
+  const platView = pick('SUBPAGE_PLATFORMS_VIEW', 'list', ['tiles', 'bar']);
+  if (platView !== 'list') flags.push('window.__PV="' + platView + '"');
   const platOpen = pick('SUBPAGE_PLATFORM_OPEN', 'off', ['auto']);
   if (platOpen !== 'off') flags.push('window.__PO="auto"');
   const linkButton = pick('SUBPAGE_LINK_BUTTON', 'copy', ['window']);
